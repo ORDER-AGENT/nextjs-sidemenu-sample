@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
 ## Getting Started
 
 First, run the development server:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npx create-next-app@latest nextjs-sidemenu-sample --typescript
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project Overview
 
-## Learn More
+このプロジェクトは、Next.js（15.4.3） で実装されたレスポンシブなサイドバーメニューのサンプルです。  
+画面サイズに応じて、サイドバーが自動的に表示形式を切り替えます。
+また、ログイン状態によるメニューやページの表示制限も実装されています。
 
-To learn more about Next.js, take a look at the following resources:
+### 環境変数
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+本プロジェクトを実行するには、ルートディレクトリに `.env.local` ファイルを作成し、以下の環境変数を設定する必要があります。
+これらの値は、セキュリティのために任意の安全な値に設定してください。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+ADMIN_PASSWORD=任意の安全なパスワード
+NEXTAUTH_SECRET=任意の長い文字列
+```
 
-## Deploy on Vercel
+`NEXTAUTH_SECRET` は、アプリケーションの認証に重要な秘密鍵です。セキュリティを確保するため、本番環境では**非常に長くランダムな文字列**を使用することを強く推奨します。
+例として、PowerShellで生成する場合は以下のコマンドを使用できます。
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```powershell
+[Convert]::ToBase64String((1..32 | ForEach-Object { Get-Random -Maximum 256 }))
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Git Bashで生成する場合は以下のコマンドを使用できます。
+
+```bash
+openssl rand -base64 32
+```
+
+### 導入ライブラリ
+
+本プロジェクトでは、以下のライブラリを導入しています。  
+詳細なインストール手順については、[導入ライブラリ.md](docs/導入ライブラリ.md) を参照してください。
+
+*   **NextAuth.js**: ユーザー認証機能を提供します。
+    *   `next-auth`
+    *   `@auth/core`
+*   **react-icons**: アイコンを簡単に利用できます。
+*   **shadcn/ui**: UI コンポーネントライブラリ。ボタンコンポーネントなどが含まれます。
+*   **react-spinners**: ローディングスピナーを提供します。
+*   **react-hot-toast**: トースト通知を表示します。
+
+### レスポンシブなサイドバー
+
+このサイドバーメニューは、画面の幅に応じて表示が切り替わります。
+
+#### デスクトップビュー (幅 1024px 以上)
+
+デスクトップ画面では、サイドバーが常に表示されます。メニューボタンをクリックするとアイコンのみの表示に切り替わります。
+
+![Desktop View](docs/1024.png)
+
+#### デスクトップビュー (幅 768px 以上)
+
+1024px未満の画面では、サイドバーはデフォルトでアイコンのみの表示となり、メニューボタンをクリックするとオーバーレイメニューが表示されます。
+
+![768px View](docs/768.png)
+![768px View](docs/overlay.png)
+
+#### モバイルビュー (幅 768px 未満)
+
+モバイル画面では、サイドバーはデフォルトで非表示となり、メニューボタンをクリックするとオーバーレイメニューが表示されます。
+
+![Mobile View](docs/mobile.png)
+

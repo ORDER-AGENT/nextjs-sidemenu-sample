@@ -1,15 +1,25 @@
-## Getting Started
+## 起動方法
 
-First, run the development server:
+
+まず、開発サーバーを起動します:
+
+```bash
+npm run dev
+```
+
+ブラウザで [http://localhost:3000](http://localhost:3000) を開き、結果を確認してください。
+
+
+## プロジェクトの作成
+
+このプロジェクトは、以下のコマンドで作成されました。
 
 ```bash
 npx create-next-app@latest nextjs-sidemenu-sample --typescript
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-
-## Project Overview
+## プロジェクト概要
 
 このプロジェクトは、Next.js（15.4.3） で実装されたレスポンシブなサイドバーメニューのサンプルです。  
 画面サイズに応じて、サイドバーが自動的に表示形式を切り替えます。

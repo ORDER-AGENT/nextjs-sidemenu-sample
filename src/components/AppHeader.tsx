@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import MenuToggleButton from './MenuToggleButton';
 import Image from 'next/image';
-import { useSession } from 'next-auth/react';
+//import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 interface AppHeaderProps {
@@ -11,8 +11,9 @@ interface AppHeaderProps {
 }
 
 export default function AppHeader({ onMenuToggleClick }: AppHeaderProps) {
-  const { status } = useSession();
-  const isAdmin = status === 'authenticated';
+  //const { status } = useSession();
+  //const isAdmin = status === 'authenticated';
+  const isAdmin = false;
   const [isClient, setIsClient] = useState(false);
 
   // windowDimensions の初期値を SSR 時とクライアントで一致させる
@@ -62,12 +63,12 @@ export default function AppHeader({ onMenuToggleClick }: AppHeaderProps) {
   }, []);
 
   return (
-    <div className="fixed top-0 left-0 right-0 h-[60px] flex items-center bg-white select-none w-full">
+    <div className="fixed top-0 left-0 right-0 h-[var(--header-height)] flex items-center bg-white select-none w-full">
       {/* 追加: ヘッダー左側にトグルボタンとロゴを配置 */}
       <div className="flex items-center flex-shrink-0 w-[250px]">
         <MenuToggleButton onClick={onMenuToggleClick} />
         <Link href="/">
-          <div className="relative w-[180px] ml-0">
+          <div className="relative w-[160px] ml-0">
             <Image
               src="/logo.png"
               alt="Logo"

@@ -1,8 +1,5 @@
 'use client';
 
-import { FiUsers } from 'react-icons/fi';
-import { RxDashboard } from 'react-icons/rx';
-import { AiOutlineHome } from 'react-icons/ai';
 import { TbLogin2, TbLogout2 } from 'react-icons/tb';
 import React, { useState, useEffect } from 'react';
 import SidebarMenuItem from './SidebarMenuItem';
@@ -12,6 +9,10 @@ import SidebarContent from './SidebarContent';
 import SidebarHeader from './SidebarHeader';
 import { usePathname } from 'next/navigation';
 import useMediaQuery from '@/hooks/useMediaQuery';
+import {
+  getSidebarMenuItems,
+  SidebarMenuItemType,
+} from '@/data/sidebarMenuItems';
 
 interface SidebarProps {
   onMenuToggleClick: () => void; // AppHeader に渡すためのプロップ
@@ -30,6 +31,9 @@ export default function Sidebar({ onMenuToggleClick, isMenuOpen }: SidebarProps)
 
   // ログイン状態を判定
   const isLoggedIn = status === 'authenticated';
+
+  // ログイン状態に基づいてロールを決定（暫定対応）
+  const userRoles = isLoggedIn ? ['admin', 'guest'] : ['guest'];
 
   // ログイン/ログアウトメニュー項目をレンダリングするヘルパー関数
   const renderAuthMenuItem = (isMenuOpenForText: boolean, keyPrefix: string) => {
@@ -100,35 +104,10 @@ export default function Sidebar({ onMenuToggleClick, isMenuOpen }: SidebarProps)
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   // 静的なメニュー項目データを定義
-  const staticMenuItems = [
-    {
-      key: 'home',
-      icon: () => <AiOutlineHome className="size-6" />,
-      text: 'ホーム',
-      path: '/',
-      isDynamic: false,
-    },
-    // isLoggedIn (管理者) の場合のみ 'ダッシュボード' を表示
-    ...(isLoggedIn
-      ? [{
-          key: 'dashboard',
-          icon: () => <RxDashboard className="size-6" />,
-          text: 'ダッシュボード',
-          path: '/dashboard',
-          isDynamic: false,
-        }]
-      : []),
-    {
-      key: 'users',
-      icon: () => <FiUsers className="size-6" />,
-      text: 'ユーザー',
-      path: '/users',
-      isDynamic: false,
-    },
-  ];
+  const menuItems: SidebarMenuItemType[] = getSidebarMenuItems(userRoles);
 
   // すべてのメニュー項目を結合（動的メニューがある場合は追加）
-  const menuItems = [...staticMenuItems /*, ...dynamicMenuItems*/];
+  // const menuItems = [...staticMenuItems /*, ...dynamicMenuItems*/];
 
   // メニュー項目クリックハンドラを共通化
   const handleMenuItemClick = (key: string) => {
@@ -172,12 +151,12 @@ export default function Sidebar({ onMenuToggleClick, isMenuOpen }: SidebarProps)
     <>
       {/* 大中画面用サイドバー (md以上で表示) */}
       <div
-        className={`hidden md:flex lg:flex flex-col fixed left-0 top-[60px] h-[calc(100dvh-60px)] bg-white flex-shrink-0 z-12 transition-all duration-150 ease-in-out
-          ${isMenuOpen ? 'lg:w-[250px] md:w-[60px]' : 'w-[60px]'}`}
+        className={`hidden md:flex lg:flex flex-col fixed left-0 top-[var(--header-height)] h-[calc(100dvh-var(--header-height))] bg-white flex-shrink-0 z-12 transition-all duration-150 ease-in-out
+          ${isMenuOpen ? 'lg:w-[var(--sidebar-width-open)] md:w-[var(--sidebar-width-closed)]' : 'w-[var(--sidebar-width-closed)]'}`}
       >
 
         {/* メニュー項目をループでレンダリングするエリア */}
-        <div className="absolute top-0 bottom-[60px] left-0 w-full overflow-y-auto overflow-x-hidden flex flex-col items-start">
+        <div className="absolute top-0 bottom-[var(--header-height)] left-0 w-full overflow-y-auto overflow-x-hidden flex flex-col items-start">
           <SidebarContent
             menuItems={menuItems}
             selectedItem={selectedItem}
@@ -191,7 +170,7 @@ export default function Sidebar({ onMenuToggleClick, isMenuOpen }: SidebarProps)
         </div>
 
         {/* ログイン/ログアウトボタンをサイドバー全体の最下部に追加 */}
-        <div className="w-full h-[60px] bg-white flex items-center z-10 mt-auto">
+        <div className="w-full h-[var(--header-height)] bg-white flex items-center z-10 mt-auto">
           {
             renderAuthMenuItem(isMenuOpen, 'desktop')
           }
@@ -208,7 +187,7 @@ export default function Sidebar({ onMenuToggleClick, isMenuOpen }: SidebarProps)
             onClick={onMenuToggleClick}
           />
           <div
-            className={`fixed top-0 left-0 h-[100dvh] w-[250px] bg-white z-16 flex flex-col items-start transition-transform duration-150 ease-in-out
+            className={`fixed top-0 left-0 h-[100dvh] w-[var(--sidebar-width-open)] bg-white z-16 flex flex-col items-start transition-transform duration-150 ease-in-out
               ${isOverlayVisible ? 'translate-x-0' : '-translate-x-full'}`}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
@@ -229,7 +208,7 @@ export default function Sidebar({ onMenuToggleClick, isMenuOpen }: SidebarProps)
                 />
               </div>
               {/* ログイン/ログアウトボタンをサイドメニュー最下部に追加（小画面用） */}
-              <div className="w-full h-[60px] flex-shrink-0 bg-white mt-auto flex items-center">
+              <div className="w-full h-[var(--header-height)] flex-shrink-0 bg-white mt-auto flex items-center">
                 {
                   renderAuthMenuItem(true, 'mobile')
                 }

@@ -4,10 +4,10 @@ import React from 'react';
 import SidebarMenuItem from './SidebarMenuItem';
 import { BeatLoader } from 'react-spinners';
 import { SidebarMenuItemType } from '@/data/sidebarMenuItems';
+import { usePathname } from 'next/navigation';
 
 interface SidebarContentProps {
-  menuItems: SidebarMenuItemType[]; // 型を SidebarMenuItemType[] に変更
-  selectedItem: string;
+  menuItems: SidebarMenuItemType[];
   hoveredItem: string | null;
   onMouseEnter: (key: string) => void;
   onMouseLeave: (key: string | null) => void;
@@ -18,7 +18,6 @@ interface SidebarContentProps {
 
 export default function SidebarContent({
   menuItems,
-  selectedItem,
   hoveredItem,
   onMouseEnter,
   onMouseLeave,
@@ -26,9 +25,11 @@ export default function SidebarContent({
   isMenuOpenForContent,
   isDynamicLoading,
 }: SidebarContentProps) {
+  const pathname = usePathname();
+
   // 静的なメニュー項目と動的なメニュー項目を分離
-  const staticMenuItems = menuItems.filter(item => !item.isDynamic); // isDynamicを使用
-  const dynamicMenuItems = menuItems.filter(item => item.isDynamic); // isDynamicを使用
+  const staticMenuItems = menuItems.filter(item => !item.isDynamic);
+  const dynamicMenuItems = menuItems.filter(item => item.isDynamic);
 
   return (
     <>
@@ -41,7 +42,7 @@ export default function SidebarContent({
             icon={item.icon}
             text={item.text}
             isMenuOpen={isMenuOpenForContent}
-            isSelected={selectedItem === item.key}
+            isSelected={pathname === item.path}
             isHovered={hoveredItem === item.key}
             onMouseEnter={() => onMouseEnter(item.key)}
             onMouseLeave={() => onMouseLeave(null)}
@@ -54,7 +55,7 @@ export default function SidebarContent({
         {/* 動的なメニュー項目はロード状態に応じて表示を切り替え */}
         {isDynamicLoading ? ( // isDynamicLoadingを使用
           <div className="flex items-center justify-center h-full w-full py-4">
-            <BeatLoader color="#36d7b7" size={isMenuOpenForContent ? 15 : 10} /> {/* isMenuOpenForContentに応じてサイズを調整 */}
+            <BeatLoader color="#36d7b7" size={isMenuOpenForContent ? 15 : 10} />
           </div>
         ) : (
           dynamicMenuItems.map((item) => (
@@ -63,7 +64,7 @@ export default function SidebarContent({
               icon={item.icon}
               text={item.text}
               isMenuOpen={isMenuOpenForContent}
-              isSelected={selectedItem === item.key}
+              isSelected={pathname === item.path}
               isHovered={hoveredItem === item.key}
               onMouseEnter={() => onMouseEnter(item.key)}
               onMouseLeave={() => onMouseLeave(null)}

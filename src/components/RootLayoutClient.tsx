@@ -6,6 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import { SessionProvider } from 'next-auth/react';
 import React, { useState, useEffect } from 'react';
 import useMediaQuery from '@/hooks/useMediaQuery'; 
+import FooterMenu from '@/components/FooterMenu';
 
 // ルートレイアウトのクライアントコンポーネント
 export default function RootLayoutClient({
@@ -59,6 +60,10 @@ export default function RootLayoutClient({
             </main>
           </div>
         </div>
+          
+        {isSmallScreen && (
+          <FooterMenu />
+        )}      
       </SessionProvider>
     </>
   );

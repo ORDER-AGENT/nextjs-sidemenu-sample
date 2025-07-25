@@ -1,5 +1,5 @@
 import { IconType } from 'react-icons';
-import { RiDashboardHorizontalFill, RiSettings5Fill, RiCalendarScheduleFill } from 'react-icons/ri';
+import { RiDashboardHorizontalFill, RiSettings5Fill/*, RiCalendarScheduleFill*/ } from 'react-icons/ri';
 //import { PiLockKeyOpenFill } from 'react-icons/pi';
 import { HiUsers } from 'react-icons/hi2';
 //import { GrSchedules } from 'react-icons/gr';
@@ -13,6 +13,7 @@ export interface SidebarMenuItemType {
   path: string;
   isDynamic: boolean;
   roles?: string[];
+  displayInFooter?: boolean;
 }
 
 export const getSidebarMenuItems = (userRoles: string[]): SidebarMenuItemType[] => {
@@ -23,6 +24,7 @@ export const getSidebarMenuItems = (userRoles: string[]): SidebarMenuItemType[] 
       text: 'ダッシュボード',
       path: '/',
       isDynamic: false,
+      displayInFooter: true,
     },
     {
       key: 'users',
@@ -30,7 +32,8 @@ export const getSidebarMenuItems = (userRoles: string[]): SidebarMenuItemType[] 
       text: 'ユーザー',
       path: '/users',
       isDynamic: false,
-      roles: ['admin']
+      roles: ['admin'],
+      displayInFooter: true,
     },
     {
       key: 'settings',
@@ -38,6 +41,7 @@ export const getSidebarMenuItems = (userRoles: string[]): SidebarMenuItemType[] 
       text: '設定',
       path: '/settings',
       isDynamic: false,
+      displayInFooter: true,
     },
   ];
 

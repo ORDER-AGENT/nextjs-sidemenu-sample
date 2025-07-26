@@ -42,7 +42,7 @@ export default function RootLayoutClient({
             onMenuToggleClick={handleMenuToggleClick}
           />
 
-          <div className="flex flex-grow mt-[60px]">
+          <div className={`flex flex-grow pt-[var(--header-height)] ${isSmallScreen ? 'pb-[var(--footer-menu-height)]' : ''}`}>
             {/* サイドバーコンポーネント */}
             <Sidebar
               isMenuOpen={isMenuOpen}

@@ -9,10 +9,8 @@ import SidebarContent from './SidebarContent';
 import SidebarHeader from './SidebarHeader';
 import { usePathname } from 'next/navigation';
 import useMediaQuery from '@/hooks/useMediaQuery';
-import {
-  getSidebarMenuItems,
-  SidebarMenuItemType,
-} from '@/data/sidebarMenuItems';
+import { getSidebarMenuItems } from '@/data/sidebarMenuItems';
+import { SidebarMenuItemType } from '@/types/sidebar';
 
 interface SidebarProps {
   onMenuToggleClick: () => void; // AppHeader に渡すためのプロップ
@@ -27,16 +25,22 @@ export default function Sidebar({ onMenuToggleClick, isMenuOpen }: SidebarProps)
   const [touchStartX, setTouchStartX] = useState(0); // スワイプ開始時のX座標を保持するステート
   const isLargeScreen = useMediaQuery('(min-width: 1024px)');
   const [isOverlayVisible, setIsOverlayVisible] = useState(false); // オーバーレイメニューの表示状態を制御する新しいステート
-  const [isMenuOpenAnimation, setIsMenuOpenAnimation] = useState(false); // メニュー開閉アニメーション用の新しいステート
-
+  
   // ログイン状態を判定
   const isLoggedIn = status === 'authenticated';
 
   // ログイン状態に基づいてロールを決定（暫定対応）
   const userRoles = isLoggedIn ? ['admin', 'guest'] : ['guest'];
 
+  const handleSidebarToggle = (e: React.MouseEvent<HTMLDivElement>) => {
+    // クリックがコンテナ自身（空白領域）から発生した場合にのみトグルを実行
+    if (e.target === e.currentTarget) {
+      onMenuToggleClick();
+    }
+  };
+
   // ログイン/ログアウトメニュー項目をレンダリングするヘルパー関数
-  const renderAuthMenuItem = (isMenuOpenForText: boolean, keyPrefix: string) => {
+  const renderAuthMenuItem = (isMenuOpenForText: boolean, keyPrefix: string, isOverlay: boolean) => {
     const menuOpenState = isMenuOpenForText;
  
     return isLoggedIn ? (
@@ -45,13 +49,14 @@ export default function Sidebar({ onMenuToggleClick, isMenuOpen }: SidebarProps)
         icon={() => <TbLogout2 className="size-6" />}
         text="管理者ログアウト"
         isMenuOpen={menuOpenState}
-        isSelected={pathname === '/'}
+        isSelected={false}
         isHovered={hoveredItem === 'logout'}
         onMouseEnter={() => setHoveredItem('logout')}
         onMouseLeave={() => setHoveredItem(null)}
         onClick={() => !isOverlayVisible ? handleMenuItemClick('logout') : handleOverlayItemClick('logout')}
         path="/"
         isExternal={false}
+        isOverlay={isOverlay}
       />
     ) : (
       <SidebarMenuItem
@@ -66,6 +71,7 @@ export default function Sidebar({ onMenuToggleClick, isMenuOpen }: SidebarProps)
         onClick={() => !isOverlayVisible ? handleMenuItemClick('admin') : handleOverlayItemClick('admin')}
         path="/admin"
         isExternal={false}
+        isOverlay={isOverlay}
       />
     );
   };
@@ -84,29 +90,28 @@ export default function Sidebar({ onMenuToggleClick, isMenuOpen }: SidebarProps)
       setIsOverlayVisible(false);
     }
 
-    // SidebarMenuItemのテキストアニメーションを制御（閉じきるまではテキストを消さないように）
-    let timer: NodeJS.Timeout;
-    if (!isMenuOpen || isLargeScreen === false) {
-      // メニューが閉じている、または大画面ではない場合、アニメーション終了を待ってから非表示にする
-      timer = setTimeout(() => {
-        setIsMenuOpenAnimation(false);
-      }, 150); // SidebarMenuItemのテキストトランジション時間に合わせて調整 (0.15s)
-    }
-    else if (isMenuOpen && isLargeScreen === true) {
-      setIsMenuOpenAnimation(true);
-    }
-    return () => clearTimeout(timer); // クリーンアップ
-
   }, [isMenuOpen, isLargeScreen]); // isMenuOpen と isLargeScreen に依存
 
   // ホバー中のアイテムキーを管理
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   // 静的なメニュー項目データを定義
-  const menuItems: SidebarMenuItemType[] = getSidebarMenuItems(userRoles);
-
-  // すべてのメニュー項目を結合（動的メニューがある場合は追加）
-  // const menuItems = [...staticMenuItems /*, ...dynamicMenuItems*/];
+  const staticMenuItems: SidebarMenuItemType[] = getSidebarMenuItems(userRoles);
+  
+  // TODO: 動的なメニュー項目を取得するロジックを実装
+  // const [dynamicMenuItems, setDynamicMenuItems] = useState<SidebarMenuItemType[] | null>(null);
+  // useEffect(() => {
+  //   // 例: APIから動的メニュー項目を非同期で取得
+  //   const fetchDynamicMenuItems = async () => {
+  //     try {
+  //       // const items = await fetch('/api/dynamic-menu');
+  //       // setDynamicMenuItems(items);
+  //     } catch (error) {
+  //       console.error('Failed to fetch dynamic menu items:', error);
+  //     }
+  //   };
+  //   fetchDynamicMenuItems();
+  // }, []);
 
   // メニュー項目クリックハンドラを共通化
   const handleMenuItemClick = (key: string) => {
@@ -149,27 +154,43 @@ export default function Sidebar({ onMenuToggleClick, isMenuOpen }: SidebarProps)
     <>
       {/* 大中画面用サイドバー (md以上で表示) */}
       <div
-        className={`hidden md:flex lg:flex flex-col fixed left-0 top-[var(--header-height)] h-[calc(100dvh-var(--header-height))] bg-white flex-shrink-0 z-12 transition-all duration-150 ease-in-out
+        className={`hidden md:flex lg:flex flex-col fixed left-0 top-[var(--header-height)] h-[calc(100dvh-var(--header-height))] bg-white flex-shrink-0 z-12 transition-all duration-[var(--sidebar-animation-duration)] ease-in-out
           ${isMenuOpen ? 'lg:w-[var(--sidebar-width-open)] md:w-[var(--sidebar-width-closed)]' : 'w-[var(--sidebar-width-closed)]'}`}
       >
 
         {/* メニュー項目をループでレンダリングするエリア */}
-        <div className="absolute top-0 bottom-[var(--header-height)] left-0 w-full overflow-y-auto overflow-x-hidden flex flex-col items-start">
+        <div
+          className="absolute top-0 bottom-[var(--header-height)] left-0 w-full overflow-y-auto overflow-x-hidden flex flex-col items-start"
+        >
           <SidebarContent
-            menuItems={menuItems}
+            menuItems={staticMenuItems}
             hoveredItem={hoveredItem}
             onMouseEnter={setHoveredItem}
             onMouseLeave={setHoveredItem}
             handleMenuItemClick={handleMenuItemClick}
-            isMenuOpenForContent={isMenuOpenAnimation}
-            isDynamicLoading={status === 'loading'}
+            isMenuOpenForContent={isMenuOpen && (isLargeScreen !== false)}
+            isOverlay={false}
+          />
+          {/* <SidebarContent
+            menuItems={dynamicMenuItems}
+            hoveredItem={hoveredItem}
+            onMouseEnter={setHoveredItem}
+            onMouseLeave={setHoveredItem}
+            handleMenuItemClick={handleMenuItemClick}
+            isMenuOpenForContent={isMenuOpen && (isLargeScreen !== false)}
+            isOverlay={false}
+          /> */}
+          {/* 伸縮して空白を埋めるクリック可能な領域 */}
+          <div
+            className="flex-grow w-full cursor-pointer"
+            onClick={handleSidebarToggle}
           />
         </div>
 
         {/* ログイン/ログアウトボタンをサイドバー全体の最下部に追加 */}
         <div className="w-full h-[60px] bg-white flex items-center z-10 mt-auto">
           {
-            renderAuthMenuItem(isMenuOpen, 'desktop')
+            renderAuthMenuItem(isMenuOpen && (isLargeScreen !== false), 'desktop', false)
           }
         </div>
       </div>
@@ -180,11 +201,11 @@ export default function Sidebar({ onMenuToggleClick, isMenuOpen }: SidebarProps)
         <>
           {/* オーバーレイメニュー背景*/}
           <div
-            className={`fixed inset-0 z-14 bg-black/50 transition-opacity duration-150 ease-in-out ${isOverlayVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+            className={`fixed inset-0 z-14 bg-black/50 transition-opacity duration-[var(--sidebar-animation-duration)] ease-in-out ${isOverlayVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
             onClick={onMenuToggleClick}
           />
           <div
-            className={`fixed top-0 left-0 h-[100dvh] w-[var(--sidebar-width-open)] bg-white z-16 flex flex-col items-start transition-transform duration-150 ease-in-out
+            className={`fixed top-0 left-0 h-[100dvh] w-[var(--sidebar-width-open)] bg-white z-16 flex flex-col items-start transition-transform duration-[var(--sidebar-animation-duration)] ease-in-out
               ${isOverlayVisible ? 'translate-x-0' : '-translate-x-full'}`}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
@@ -192,21 +213,37 @@ export default function Sidebar({ onMenuToggleClick, isMenuOpen }: SidebarProps)
               <SidebarHeader onMenuToggleClick={onMenuToggleClick} />
 
               {/* メニュー項目をループでレンダリング（小画面用） */}
-              <div className="flex-grow overflow-y-auto w-full">
+              <div
+                className="flex-grow overflow-y-auto w-full flex flex-col"
+              >
                 <SidebarContent
-                  menuItems={menuItems}
+                  menuItems={staticMenuItems}
                   hoveredItem={hoveredItem}
                   onMouseEnter={setHoveredItem}
                   onMouseLeave={setHoveredItem}
                   handleMenuItemClick={handleOverlayItemClick}
                   isMenuOpenForContent={true}
-                  isDynamicLoading={status === 'loading'}
+                  isOverlay={true}
+                />
+                {/* <SidebarContent
+                  menuItems={dynamicMenuItems}
+                  hoveredItem={hoveredItem}
+                  onMouseEnter={setHoveredItem}
+                  onMouseLeave={setHoveredItem}
+                  handleMenuItemClick={handleOverlayItemClick}
+                  isMenuOpenForContent={true}
+                  isOverlay={true}
+                /> */}
+                {/* 伸縮して空白を埋めるクリック可能な領域 */}
+                <div
+                  className="flex-grow w-full cursor-pointer"
+                  onClick={handleSidebarToggle}
                 />
               </div>
               {/* ログイン/ログアウトボタンをサイドメニュー最下部に追加（小画面用） */}
               <div className="w-full h-[60px] flex-shrink-0 bg-white mt-auto flex items-center">
                 {
-                  renderAuthMenuItem(true, 'mobile')
+                  renderAuthMenuItem(true, 'mobile', true)
                 }
             </div>
           </div>

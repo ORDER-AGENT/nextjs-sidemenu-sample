@@ -17,6 +17,7 @@ interface SidebarMenuItemProps {
   onClick: () => void; // クリック時のハンドラ
   path: string; // リンク先パス
   isExternal: boolean; // 外部リンクかどうかのフラグ
+  isOverlay: boolean;
 }
 
 export default function SidebarMenuItem({
@@ -30,49 +31,30 @@ export default function SidebarMenuItem({
   onClick,
   path,
   isExternal,
+  isOverlay,
 }: SidebarMenuItemProps) {
   
   // メニュー項目全体のベーススタイル
   const itemBaseClasses = `
-    flex items-center justify-start pl-5 relative overflow-hidden
-    transition-all duration-150 ease-in-out
-    ${isSelected ? 'text-blue-700' : 'text-gray-500/90 hover:text-gray-600'} // ホバー時のテキスト色を追加
-    ${isMenuOpen ? 'h-[40px] w-full' : 'h-[40px] w-full'}
+    flex items-center justify-start pl-5 relative overflow-hidden h-[40px]
+    transition-all duration-[var(--sidebar-animation-duration)] ease-in-out
+    ${isSelected ? 'text-primary' : 'text-secondary hover:text-accent-foreground'} // ホバー時のテキスト色を追加
   `;
 
 
   // アイコン部分のスタイル
   const iconClasses = `
-    flex-shrink-0 flex items-center justify-center size-6
-    ${isMenuOpen ? 'mr-2' : 'mr-0'}
+    flex-shrink-0 flex items-center justify-center size-6 z-10 mr-2
   `;
 
   // テキスト部分のスタイル
   const textClasses = `
-    text-base overflow-hidden transition-all duration-150 ease-in-out
-    ${isMenuOpen ? 'w-auto opacity-100' : 'w-0 opacity-0 pointer-events-none'}
-  `;
-
-  // ホバー時の擬似要素のスタイル
-  const hoverClasses = `
-    absolute top-1/2 -translate-y-1/2 z-[-1] transition-all duration-150 ease-in-out
-    ${isHovered ? 'opacity-100' : 'opacity-0 pointer-events-none'}
-    ${isMenuOpen
-      ? 'left-3 right-3 h-[32px] bg-gray-200 rounded-lg' // メニューが開いている場合
-      : 'left-1/2 -translate-x-1/2 w-[40px] h-[40px] bg-gray-200 rounded-full' // メニューが閉じている場合
-    }
+    text-base overflow-hidden transition-all duration-[var(--sidebar-animation-duration)] ease-in-out whitespace-nowrap
+    ${isMenuOpen ? `${!isOverlay ? 'lg:opacity-100 md:opacity-0' : 'opacity-100'}` : 'opacity-0 pointer-events-none'}
   `;
 
   const handleClick = () => {
-    // 外部リンクの場合は新しいタブで開く
-    if (isExternal && path) {
-      window.open(path, '_blank');
-      onClick(); // クリックハンドラも実行
-    } else if (path) {
-      onClick(); // クリックハンドラも実行
-    } else {
-      onClick(); // パスがない場合はクリックハンドラのみ実行
-    }
+    onClick(); // isExternal の条件分岐を削除し、onClickのみを呼び出す
   };
 
   const commonProps = {
@@ -91,7 +73,7 @@ export default function SidebarMenuItem({
   const childrenContent = (
     <>
       {isSelected && (
-        <div className="absolute inset-y-0 left-0 w-[60px] bg-gradient-to-r from-[#ACA9FF]/40 to-transparent" />
+        <div className="absolute inset-y-0 left-0 w-[60px] bg-gradient-to-r from-[var(--primary-gradient)]/20 to-transparent" />
       )}
       <div className={iconClasses}>
         {typeof Icon === 'string' ? (
@@ -109,8 +91,7 @@ export default function SidebarMenuItem({
         )}
       </div>
       <span className={textClasses}>{text}</span>
-      {/* ホバー時に表示する擬似要素 */}
-      <div className={hoverClasses} />
+
     </>
   );
 

@@ -1,50 +1,56 @@
-import { IconType } from 'react-icons';
-import { RiDashboardHorizontalFill, RiSettings5Fill/*, RiCalendarScheduleFill*/ } from 'react-icons/ri';
-//import { PiLockKeyOpenFill } from 'react-icons/pi';
+import { RiDashboardHorizontalFill, RiSettings5Fill, RiCalendarScheduleFill } from 'react-icons/ri';
+import { IoNotifications } from 'react-icons/io5';
 import { HiUsers } from 'react-icons/hi2';
-//import { GrSchedules } from 'react-icons/gr';
-//import { IoNotifications } from 'react-icons/io5';
-//import { BsChatDotsFill } from 'react-icons/bs';
+import { SidebarMenuItemType } from '@/types/sidebar';
 
-export interface SidebarMenuItemType {
-  key: string;
-  icon: IconType;
-  text: string;
-  path: string;
-  isDynamic: boolean;
-  roles?: string[];
-  displayInFooter?: boolean;
-}
+export const allMenuItems: SidebarMenuItemType[] = [
+  {
+    type: 'item',
+    key: 'dashboard',
+    icon: RiDashboardHorizontalFill,
+    text: 'ダッシュボード',
+    path: '/',
+    displayInFooter: true,
+  },
+  {
+    type: 'item',
+    key: 'users',
+    icon: HiUsers,
+    text: 'ユーザー',
+    path: '/users',
+    roles: ['admin'],
+    displayInFooter: true,
+  },
+  {
+    type: 'item',
+    key: 'schedule',
+    icon: RiCalendarScheduleFill,
+    text: 'スケジュール',
+    path: '/schedule',
+    displayInFooter: true,
+  },
+  {
+    type: 'divider',
+    key: 'external-divider',
+  },  {
+    type: 'item',
+    key: 'notification',
+    icon: IoNotifications,
+    text: '通知',
+    path: '/notification',
+    displayInFooter: true,
+  },
+  {
+    type: 'item',
+    key: 'settings',
+    icon: RiSettings5Fill,
+    text: '設定',
+    path: '/settings',
+    displayInFooter: false,
+  },
+];
 
 export const getSidebarMenuItems = (userRoles: string[]): SidebarMenuItemType[] => {
-  const allMenuItems: SidebarMenuItemType[] = [
-    {
-      key: 'dashboard',
-      icon: RiDashboardHorizontalFill,
-      text: 'ダッシュボード',
-      path: '/',
-      isDynamic: false,
-      displayInFooter: true,
-    },
-    {
-      key: 'users',
-      icon: HiUsers,
-      text: 'ユーザー',
-      path: '/users',
-      isDynamic: false,
-      roles: ['admin'],
-      displayInFooter: true,
-    },
-    {
-      key: 'settings',
-      icon: RiSettings5Fill,
-      text: '設定',
-      path: '/settings',
-      isDynamic: false,
-      displayInFooter: true,
-    },
-  ];
-
   // ユーザーのロールに基づいてメニュー項目をフィルタリング
   return allMenuItems.filter(item => {
     // ロールが設定されていない、または空配列の場合は常に表示

@@ -1,35 +1,50 @@
 'use client';
 
-import Sidebar from '@/components/Sidebar';
+import Sidebar from '@/components/menu/Sidebar';
 import AppHeader from '@/components/AppHeader';
 import { Toaster } from 'react-hot-toast';
 import { SessionProvider } from 'next-auth/react';
 import React, { useState, useEffect } from 'react';
-import useMediaQuery from '@/hooks/useMediaQuery'; 
-import FooterMenu from '@/components/FooterMenu';
+import useMediaQuery from '@/hooks/useMediaQuery';
+import FooterMenu from '@/components/menu/FooterMenu';
+import Cookies from 'js-cookie';
 
 // ルートレイアウトのクライアントコンポーネント
 export default function RootLayoutClient({
-  children, // 子要素（ページコンポーネントなど）
+  children,
+  initialIsMenuOpen, // サーバーから渡される初期状態
 }: {
   children: React.ReactNode;
+  initialIsMenuOpen: boolean;
 }) {
-  // サイドバーの開閉状態を管理。
-  // デスクトップでの初回表示を考慮し、デフォルトで開いた状態にする
-  const [isMenuOpen, setIsMenuOpen] = useState(true);
+  // サーバーから渡された初期値で状態を初期化
+  const [isMenuOpen, setIsMenuOpen] = useState(initialIsMenuOpen);
   const isLargeScreen = useMediaQuery('(min-width: 1024px)');
   const isSmallScreen = useMediaQuery('(max-width: 767px)');
 
-  // isMenuOpen の初期状態を isLargeScreen に応じて設定（Hydration後）
+  // 画面サイズが変更された時の追従処理
   useEffect(() => {
-    if (isLargeScreen !== null && isSmallScreen !== null) { // 両方の状態が確定してから設定
-      // 大画面の場合、メニューを開く
-      setIsMenuOpen(isLargeScreen);
-    }
-  }, [isLargeScreen, isSmallScreen]);
+    // isLargeScreenが未確定のうちは何もしない
+    if (isLargeScreen === null) return;
 
-  const handleMenuToggleClick = () => { // メニューの開閉をトグルする関数を追加
-    setIsMenuOpen(!isMenuOpen);
+    if (!isLargeScreen) {
+      // 大画面でなくなった場合は、メニューを強制的に閉じる
+      setIsMenuOpen(false);
+    } else {
+      // 大画面になった場合は、Cookieから再度状態を取得して設定する
+      const savedState = Cookies.get('sidebarOpenState');
+      // Cookieに保存された値があればそれを使い、なければデフォルトで開く
+      setIsMenuOpen(savedState !== undefined ? savedState === 'true' : true);
+    }
+  }, [isLargeScreen]);
+
+  const handleMenuToggleClick = () => {
+    const newState = !isMenuOpen;
+    setIsMenuOpen(newState);
+    // 大画面の時だけ、状態変更をCookieに保存する
+    if (isLargeScreen) {
+      Cookies.set('sidebarOpenState', String(newState), { expires: 365 });
+    }
   };
 
   return (
@@ -38,11 +53,13 @@ export default function RootLayoutClient({
       <SessionProvider>
         <div className="flex flex-col h-[100dvh]">
           {/* ヘッダー部分をコンポーネントとしてレンダリング */}
-          <AppHeader
-            onMenuToggleClick={handleMenuToggleClick}
-          />
+          <AppHeader onMenuToggleClick={handleMenuToggleClick} />
 
-          <div className={`flex flex-grow pt-[var(--header-height)] ${isSmallScreen ? 'pb-[var(--footer-menu-height)]' : ''}`}>
+          <div
+            className={`flex flex-grow pt-[var(--header-height)] ${
+              isSmallScreen ? 'pb-[var(--footer-menu-height)]' : ''
+            }`}
+          >
             {/* サイドバーコンポーネント */}
             <Sidebar
               isMenuOpen={isMenuOpen}
@@ -50,8 +67,10 @@ export default function RootLayoutClient({
             />
             {/* メインコンテンツ領域 */}
             <main
-              className={`flex-grow overflow-auto transition-[margin-left] duration-150 ease-in-out ${
-                isMenuOpen ? 'lg:ml-[250px] md:ml-[60px]' : 'lg:ml-[60px] md:ml-[60px]'
+              className={`flex-grow overflow-auto transition-[margin-left] duration-[var(--sidebar-animation-duration)] ease-in-out ${
+                isMenuOpen
+                  ? 'lg:ml-[var(--sidebar-width-open)] md:ml-[var(--sidebar-width-closed)]'
+                  : 'lg:ml-[var(--sidebar-width-closed)] md:ml-[var(--sidebar-width-closed)]'
               }`}
             >
               {children}
@@ -60,10 +79,8 @@ export default function RootLayoutClient({
             </main>
           </div>
         </div>
-          
-        {isSmallScreen && (
-          <FooterMenu />
-        )}      
+
+        {isSmallScreen && <FooterMenu />}
       </SessionProvider>
     </>
   );

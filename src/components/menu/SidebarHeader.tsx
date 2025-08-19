@@ -13,9 +13,9 @@ export default function SidebarHeader({ onMenuToggleClick }: SidebarHeaderProps)
     <div className="w-full h-[60px] flex items-center flex-shrink-0 bg-white z-10">
       <MenuToggleButton onClick={onMenuToggleClick} />
       {/* 親要素を relative にしてサイズを定義 */}
-      <div className="relative w-[60px] ml-0">
+      <div className="relative w-[160px] ml-0">
         <Image
-          src="/logo.svg"
+          src="/logo.png"
           alt="Logo"
           width={0}
           height={0}

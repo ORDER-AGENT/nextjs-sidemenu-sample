@@ -76,6 +76,7 @@ export default function AppHeader({ onMenuToggleClick }: AppHeaderProps) {
               height={0}
               sizes="100%"
               className="w-full h-auto"
+              unoptimized={true}
             />
           </div>
         </Link>

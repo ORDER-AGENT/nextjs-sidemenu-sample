@@ -21,6 +21,7 @@ export default function SidebarHeader({ onMenuToggleClick }: SidebarHeaderProps)
           height={0}
           sizes="100%"
           className="w-full h-auto"
+          unoptimized={true}
         />
       </div>
     </div>
